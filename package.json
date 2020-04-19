@@ -1,0 +1,26 @@
+{
+  "name": "react-async-state",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@testing-library/react": "^10.0.2",
+    "@types/jest": "^24.9.0",
+    "@types/node": "^13.1.8",
+    "@types/react": "^16.9.17",
+    "@types/react-dom": "^16.9.5",
+    "deasync": "^0.1.19",
+    "jest": "^24.9.0",
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
+    "react-router": "^5.1.2",
+    "react-router-dom": "^5.1.2",
+    "ts-jest": "^24.3.0",
+    "typescript": "^3.7.5"
+  }
+}
