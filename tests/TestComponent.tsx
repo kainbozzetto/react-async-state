@@ -16,7 +16,9 @@ export async function asyncSuccessMethod() {
 
 export async function asyncFailureMethod() {
     return new Promise((resolve, reject) => {
-        setTimeout(reject, 50);
+        setTimeout(() => {
+            reject('error!');
+        }, 50);
     });
 }
 
@@ -30,7 +32,7 @@ export const TestComponent:FunctionComponent<TestComponentProps> = ({method}) =>
         <>
             {data.loading && <span>Loading</span>}
             {data.result && <span>{data.result}</span>}
-            {data.error && <span>{'error!'}</span>}
+            {data.error && <span>{data.error}</span>}
         </>
     );
 }

@@ -10,10 +10,14 @@ import {
 import {
     createServerStore,
     encodeStore,
-    useDefaultStore,
+    useNewStore,
 } from '../src/index';
 
 describe('useAsyncState', () => {
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+
     test('server side rendering works fine on success', () => {
         const store = createServerStore()
         const html = ReactDOMServer.renderToString(
@@ -26,7 +30,7 @@ describe('useAsyncState', () => {
             components: {
                 0: {
                     result: 'success!',
-                    error: false,
+                    error: null,
                     loading: false,
                 },
             },
@@ -45,14 +49,14 @@ describe('useAsyncState', () => {
             components: {
                 0: {
                     result: null,
-                    error: true,
+                    error: 'error!',
                     loading: false,
                 },
             },
         });
     });
 
-    test('components load state from store on initial render', () => {
+    test('components load success state from store on initial render', () => {
         const store = createServerStore()
         const html = ReactDOMServer.renderToString(
             <TestComponent method={asyncSuccessMethod}/>
@@ -62,7 +66,8 @@ describe('useAsyncState', () => {
                 <div id="app">${html}</div>
             </body>
         `;
-        useDefaultStore();
+
+        useNewStore();
         const setState = jest.fn();
         const useStateSpy = jest.spyOn(React, 'useState')
         const useStateMock: any = (init: any) => [init, setState]
@@ -78,10 +83,44 @@ describe('useAsyncState', () => {
         expect(useStateSpy).toHaveBeenCalledTimes(1);
         expect(useStateSpy).toHaveBeenCalledWith({
             result: 'success!',
-            error: false,
+            error: null,
             loading: false,
         });
         expect(setState).toHaveBeenCalledTimes(0);
         expect(document.body.innerHTML.trim()).toEqual('<div id="app"><span>success!</span></div>')
+    });
+
+    test('components load error state from store on initial render', () => {
+        const store = createServerStore()
+        const html = ReactDOMServer.renderToString(
+            <TestComponent method={asyncFailureMethod}/>
+        );
+        document.documentElement.innerHTML = `
+            <body data-state="${encodeStore(store)}">
+                <div id="app">${html}</div>
+            </body>
+        `;
+
+        useNewStore();
+        const setState = jest.fn();
+        const useStateSpy = jest.spyOn(React, 'useState')
+        const useStateMock: any = (init: any) => [init, setState]
+        useStateSpy.mockImplementation(useStateMock);
+
+        render(
+            <TestComponent method={asyncFailureMethod}/>,
+            {
+                container: document.getElementById('app'),
+                hydrate: true,
+            },    
+        )
+        expect(useStateSpy).toHaveBeenCalledTimes(1);
+        expect(useStateSpy).toHaveBeenCalledWith({
+            result: null,
+            error: 'error!',
+            loading: false,
+        });
+        expect(setState).toHaveBeenCalledTimes(0);
+        expect(document.body.innerHTML.trim()).toEqual('<div id="app"><span>error!</span></div>')
     });
 });

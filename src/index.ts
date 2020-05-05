@@ -10,7 +10,7 @@ declare global {
 
 export interface asyncData {
     result: any,
-    error: boolean,
+    error: any,
     loading: boolean,
 }
 
@@ -50,13 +50,13 @@ export function _useAsyncState(
       try {
         data = {
           result: await callback(),
-          error: false,
+          error: null,
           loading: false,
         };
-      } catch(e) {
+      } catch(error) {
         data = {
           result: defaultState,
-          error: true,
+          error,
           loading: false,
         };
       }
@@ -89,7 +89,7 @@ export function _useAsyncState(
       } else {
         state = useState({
           result: defaultState,
-          error: false,
+          error: null,
           loading: false,
         });
       }
@@ -98,19 +98,19 @@ export function _useAsyncState(
           let data: asyncData;
           state[1]({
             result: defaultState,
-            error: false,
+            error: null,
             loading: true
           });
           try {
             data = {
               result: await callback(),
-              error: false,
+              error: null,
               loading: false,
             };
-          } catch(e) {
+          } catch(error) {
             data = {
               result: defaultState,
-              error: true,
+              error,
               loading: false,
             };
           }
@@ -128,8 +128,8 @@ export const store = new Store();
 
 export const useAsyncState = _useAsyncState.bind(null, store);
 
-export function useDefaultStore() {
-  module.exports.useAsyncState = _useAsyncState.bind(null, store);
+export function useNewStore() {
+  module.exports.useAsyncState = _useAsyncState.bind(null, new Store());
 }
 
 export function createServerStore() {
