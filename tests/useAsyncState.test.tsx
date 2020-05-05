@@ -56,7 +56,7 @@ describe('useAsyncState', () => {
         });
     });
 
-    test('components load success state from store on initial render', () => {
+    test('component loads success state from store on initial render', () => {
         const store = createServerStore()
         const html = ReactDOMServer.renderToString(
             <TestComponent method={asyncSuccessMethod}/>
@@ -90,7 +90,7 @@ describe('useAsyncState', () => {
         expect(document.body.innerHTML.trim()).toEqual('<div id="app"><span>success!</span></div>')
     });
 
-    test('components load error state from store on initial render', () => {
+    test('component loads error state from store on initial render', () => {
         const store = createServerStore()
         const html = ReactDOMServer.renderToString(
             <TestComponent method={asyncFailureMethod}/>
@@ -122,5 +122,39 @@ describe('useAsyncState', () => {
         });
         expect(setState).toHaveBeenCalledTimes(0);
         expect(document.body.innerHTML.trim()).toEqual('<div id="app"><span>error!</span></div>')
+    });
+
+    test('component loads success state from method on initial render', () => {
+        document.documentElement.innerHTML = `
+            <body>
+                <div id="app"></div>
+            </body>
+        `;
+
+        useNewStore();
+        const useStateSpy = jest.spyOn(React, 'useState')
+        
+        render(
+            <TestComponent method={asyncSuccessMethod}/>,
+            {
+                container: document.getElementById('app'),
+                hydrate: true,
+            },    
+        )
+
+        // TODO: Find out why this is called twice
+        expect(useStateSpy).toHaveBeenCalledTimes(2);
+        expect(useStateSpy.mock.calls[0]).toEqual([{
+            result: null,
+            error: null,
+            loading: false,
+        }]);
+        expect(useStateSpy.mock.calls[1]).toEqual([{
+            result: null,
+            error: null,
+            loading: false,
+        }]);
+        expect(document.body.innerHTML.trim()).toEqual('<div id="app"><span>Loading</span></div>')
+        // TODO: Show that success state is loaded
     });
 });
