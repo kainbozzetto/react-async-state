@@ -128,6 +128,10 @@ export const store = new Store();
 
 export const useAsyncState = _useAsyncState.bind(null, store);
 
+export function useDefaultStore() {
+  module.exports.useAsyncState = _useAsyncState.bind(null, store);
+}
+
 export function createServerStore() {
   const store = new Store({isServer: true})
   module.exports.useAsyncState = _useAsyncState.bind(null, store);

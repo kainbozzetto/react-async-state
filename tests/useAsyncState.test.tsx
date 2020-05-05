@@ -1,16 +1,17 @@
-import React, { ReactComponentElement, Dispatch } from 'react';
-import ReactDOM from 'react-dom';
+import {render} from '@testing-library/react';
+import React from 'react';
 import ReactDOMServer from 'react-dom/server';
-import ReactTestUtils from 'react-dom/test-utils';
-import { render } from '@testing-library/react';
 
 import {
     asyncSuccessMethod,
     asyncFailureMethod,
     TestComponent,
-    Wrapper,
 } from './TestComponent';
-import {createServerStore} from '../src/index';
+import {
+    createServerStore,
+    encodeStore,
+    useDefaultStore,
+} from '../src/index';
 
 describe('useAsyncState', () => {
     test('server side rendering works fine on success', () => {
@@ -51,17 +52,17 @@ describe('useAsyncState', () => {
         });
     });
 
-    test('components load state on initial render', () => {
+    test('components load state from store on initial render', () => {
         const store = createServerStore()
         const html = ReactDOMServer.renderToString(
             <TestComponent method={asyncSuccessMethod}/>
-        )
-        document.body.innerHTML = `<html>
-            <body data-state="${store}">
+        );
+        document.documentElement.innerHTML = `
+            <body data-state="${encodeStore(store)}">
                 <div id="app">${html}</div>
             </body>
-        </html>`;
-
+        `;
+        useDefaultStore();
         const setState = jest.fn();
         const useStateSpy = jest.spyOn(React, 'useState')
         const useStateMock: any = (init: any) => [init, setState]
@@ -74,19 +75,13 @@ describe('useAsyncState', () => {
                 hydrate: true,
             },    
         )
-
-        // const tree = ReactDOM.hydrate(
-        //     <Wrapper>
-        //         <TestComponent method={asyncSuccessMethod}/>
-        //     </Wrapper>,
-        //     document.getElementById('app'),
-        // ) as any;
-
-        // console.log(tree)
-        // ReactTestUtils.findRenderedComponentWithType(
-        //     tree,
-        //     TestComponent as any,
-        // )
-        expect(setState).toHaveBeenCalledWith(1);
+        expect(useStateSpy).toHaveBeenCalledTimes(1);
+        expect(useStateSpy).toHaveBeenCalledWith({
+            result: 'success!',
+            error: false,
+            loading: false,
+        });
+        expect(setState).toHaveBeenCalledTimes(0);
+        expect(document.body.innerHTML.trim()).toEqual('<div id="app"><span>success!</span></div>')
     });
 });

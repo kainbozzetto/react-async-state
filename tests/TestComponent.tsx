@@ -1,6 +1,6 @@
-import React, {FunctionComponent, Component} from 'react';
+import React, {FunctionComponent} from 'react';
 
-import {useAsyncState, asyncData} from '../src/index';
+import {useAsyncState} from '../src/index';
 
 interface TestComponentProps {
     method: Function,
@@ -33,10 +33,4 @@ export const TestComponent:FunctionComponent<TestComponentProps> = ({method}) =>
             {data.error && <span>{'error!'}</span>}
         </>
     );
-}
-
-export class Wrapper extends React.Component {
-    render() {
-        return this.props.children;
-    }
 }
