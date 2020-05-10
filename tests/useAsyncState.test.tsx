@@ -1,4 +1,4 @@
-import {render} from '@testing-library/react';
+import {act, render} from '@testing-library/react';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 
@@ -124,7 +124,7 @@ describe('useAsyncState', () => {
         expect(document.body.innerHTML.trim()).toEqual('<div id="app"><span>error!</span></div>')
     });
 
-    test('component loads success state from method on initial render', () => {
+    test('component loads success state from method on initial render', async () => {
         document.documentElement.innerHTML = `
             <body>
                 <div id="app"></div>
@@ -132,29 +132,132 @@ describe('useAsyncState', () => {
         `;
 
         useNewStore();
-        const useStateSpy = jest.spyOn(React, 'useState')
-        
-        render(
-            <TestComponent method={asyncSuccessMethod}/>,
-            {
-                container: document.getElementById('app'),
-                hydrate: true,
-            },    
-        )
+        const {useState} = React;
+        let setStateSpy = jest.fn();
+        const useStateMock: any = (data: any) => {
+            const [state, setState] = useState(data);
+            setStateSpy.mockImplementation(setState);
+            return [state, setStateSpy];
+        };
+        const useStateSpy = jest.spyOn(React, 'useState').mockImplementation(
+            useStateMock
+        );
 
-        // TODO: Find out why this is called twice
+        let promise : Promise<any>;
+        const asyncSuccessMethodWrapper = jest.fn(
+            async () => {
+                promise = asyncSuccessMethod();
+                return await promise;
+            }
+        );
+        
+        await act(async () => {
+            render(
+                <TestComponent method={asyncSuccessMethodWrapper}/>,
+                {
+                    container: document.getElementById('app'),
+                    hydrate: true,
+                },    
+            );
+        });
+
+        // useState called initially and after useEffect
         expect(useStateSpy).toHaveBeenCalledTimes(2);
         expect(useStateSpy.mock.calls[0]).toEqual([{
             result: null,
             error: null,
             loading: false,
         }]);
-        expect(useStateSpy.mock.calls[1]).toEqual([{
+        // setStateSpy in useEffect called once to set loading to be true
+        expect(setStateSpy).toHaveBeenCalledTimes(1);
+        expect(setStateSpy.mock.calls[0]).toEqual([{
+            result: null,
+            error: null,
+            loading: true,
+        }]);
+        expect(document.body.innerHTML.trim()).toEqual('<div id="app"><span>Loading</span></div>');
+
+        await act(async () => {
+            await promise;
+        });
+        // setStateSpy in useEffect after promise has been resolved
+        expect(setStateSpy).toHaveBeenCalledTimes(2);
+        expect(setStateSpy.mock.calls[1]).toEqual([{
+            result: 'success!',
+            error: null,
+            loading: false,
+        }]);
+        expect(document.body.innerHTML.trim()).toEqual('<div id="app"><span>success!</span></div>');
+    });
+
+    test('component loads error state from method on initial render', async () => {
+        document.documentElement.innerHTML = `
+            <body>
+                <div id="app"></div>
+            </body>
+        `;
+
+        useNewStore();
+        const {useState} = React;
+        let setStateSpy = jest.fn();
+        const useStateMock: any = (data: any) => {
+            const [state, setState] = useState(data);
+            setStateSpy.mockImplementation(setState);
+            return [state, setStateSpy];
+        };
+        const useStateSpy = jest.spyOn(React, 'useState').mockImplementation(
+            useStateMock
+        );
+
+        let promise : Promise<any>;
+        const asyncFailureMethodWrapper = jest.fn(
+            async () => {
+                promise = asyncFailureMethod();
+                return await promise;
+            }
+        );
+
+        await act(async () => {
+            render(
+                <TestComponent method={asyncFailureMethodWrapper}/>,
+                {
+                    container: document.getElementById('app'),
+                    hydrate: true,
+                },    
+            );
+        });
+
+        // useState called initially and after useEffect
+        expect(useStateSpy).toHaveBeenCalledTimes(2);
+        expect(useStateSpy.mock.calls[0]).toEqual([{
             result: null,
             error: null,
             loading: false,
         }]);
-        expect(document.body.innerHTML.trim()).toEqual('<div id="app"><span>Loading</span></div>')
-        // TODO: Show that success state is loaded
+        // setStateSpy in useEffect called once to set loading to be true
+        expect(setStateSpy).toHaveBeenCalledTimes(1);
+        expect(setStateSpy.mock.calls[0]).toEqual([{
+            result: null,
+            error: null,
+            loading: true,
+        }]);
+        expect(document.body.innerHTML.trim()).toEqual('<div id="app"><span>Loading</span></div>');
+
+        await act(async () => {
+            try {
+                await promise;
+            } catch(e) {
+
+            }
+        });
+
+        // setStateSpy in useEffect after promise has been resolved
+        expect(setStateSpy).toHaveBeenCalledTimes(2);
+        expect(setStateSpy.mock.calls[1]).toEqual([{
+            result: null,
+            error: 'error!',
+            loading: false,
+        }]);
+        expect(document.body.innerHTML.trim()).toEqual('<div id="app"><span>error!</span></div>');
     });
 });
