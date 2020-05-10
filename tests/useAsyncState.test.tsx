@@ -5,6 +5,7 @@ import ReactDOMServer from 'react-dom/server';
 import {
     asyncSuccessMethod,
     asyncFailureMethod,
+    ParentTestComponent,
     TestComponent,
 } from './TestComponent';
 import {
@@ -259,5 +260,46 @@ describe('useAsyncState', () => {
             loading: false,
         }]);
         expect(document.body.innerHTML.trim()).toEqual('<div id="app"><span>error!</span></div>');
+    });
+
+    test('nested components load state from store on initial render', () => {
+        const store = createServerStore()
+        const html = ReactDOMServer.renderToString(
+            <ParentTestComponent/>
+        );
+        document.documentElement.innerHTML = `
+            <body data-state="${encodeStore(store)}">
+                <div id="app">${html}</div>
+            </body>
+        `;
+
+        useNewStore();
+        const setState = jest.fn();
+        const useStateSpy = jest.spyOn(React, 'useState')
+        const useStateMock: any = (init: any) => [init, setState]
+        useStateSpy.mockImplementation(useStateMock);
+
+        render(
+            <ParentTestComponent/>,
+            {
+                container: document.getElementById('app'),
+                hydrate: true,
+            },    
+        )
+        expect(useStateSpy).toHaveBeenCalledTimes(2);
+        // ParentTestComponent
+        expect(useStateSpy.mock.calls[0]).toEqual([{
+            result: true,
+            error: null,
+            loading: false,
+        }]);
+        // TestComponent
+        expect(useStateSpy.mock.calls[1]).toEqual([{
+            result: 'success!',
+            error: null,
+            loading: false,
+        }]);
+        expect(setState).toHaveBeenCalledTimes(0);
+        expect(document.body.innerHTML.trim()).toEqual('<div id="app"><h1>Result:</h1><span>success!</span></div>')
     });
 });

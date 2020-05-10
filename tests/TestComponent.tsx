@@ -36,3 +36,25 @@ export const TestComponent:FunctionComponent<TestComponentProps> = ({method}) =>
         </>
     );
 }
+
+export const ParentTestComponent:FunctionComponent = () => {
+    const [data, getData] = useAsyncState(
+        false,
+        async () => {
+            return await new Promise(
+                (resolve) => {
+                    setTimeout(() => resolve(true), 50)
+                }
+            );
+        },
+    );
+
+    return (
+        <>
+            <h1>Result:</h1>
+            {data.result && <TestComponent method={asyncSuccessMethod}/>}
+        </>
+    );
+}
+
+
