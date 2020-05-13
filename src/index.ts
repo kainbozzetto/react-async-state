@@ -1,32 +1,26 @@
 import {useEffect, useState} from 'react';
 
-declare global {
-    interface Window {
-        state: {
-            [index: number]: any
-        }
-    }
-}
-
 export interface asyncData {
-    result: any,
-    error: any,
-    loading: boolean,
+  result: any,
+  error: any,
+  loading: boolean,
 }
 
 export class Store {
   componentId: number = 0;
+
   isServer: boolean = false;
+
   components: {
     [index: number]: asyncData
   } = {};
 
-  constructor({isServer}: {isServer?: boolean} = {}) {
+  constructor({ isServer }: {isServer?: boolean} = {}) {
     this.isServer = isServer;
   }
 }
 
-export function _useAsyncState(
+function unboundUseAsyncState(
   store: Store,
   defaultState: any,
   callback: Function,
@@ -64,10 +58,10 @@ export function _useAsyncState(
     }
     syncCallback();
     const deasync = require('deasync');
-    if(loop) {
+    if (loop) {
       deasync.loopWhile(() => !done);
     } else {
-      while(!done) {
+      while (!done) {
         deasync.sleep(sleep);
       }
     }
@@ -126,18 +120,18 @@ export function _useAsyncState(
 
 export const store = new Store();
 
-export const useAsyncState = _useAsyncState.bind(null, store);
+export const useAsyncState = unboundUseAsyncState.bind(null, store);
 
 export function useNewStore() {
-  module.exports.useAsyncState = _useAsyncState.bind(null, new Store());
+  module.exports.useAsyncState = useAsyncState.bind(null, new Store());
 }
 
 export function createServerStore() {
-  const store = new Store({isServer: true})
-  module.exports.useAsyncState = _useAsyncState.bind(null, store);
-  return store;
+  const newStore = new Store({ isServer: true });
+  module.exports.useAsyncState = useAsyncState.bind(null, newStore);
+  return newStore;
 }
-  
+
 export function encodeStore(decodedStore: Store) {
   return Buffer.from(JSON.stringify(decodedStore.components)).toString('base64');
 }
