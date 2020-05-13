@@ -6,16 +6,8 @@ module.exports = {
   ],
   extends: [
     'airbnb-typescript',
-    // 'eslint:recommended',
-    // 'plugin:@typescript-eslint/eslint-recommended',
-    // 'plugin:@typescript-eslint/recommended',
-    // 'airbnb',
-    // 'plugin:react/recommended',
-    // 'plugin:import/errors',
-    // 'plugin:import/warnings',
-    // 'plugin:import/typescript',
   ],
   parserOptions: {
-    project: './tsconfig.json',
+    project: './tsconfig.eslint.json',
   },
 };
