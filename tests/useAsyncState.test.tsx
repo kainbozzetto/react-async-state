@@ -9,9 +9,8 @@ import {
   TestComponent,
 } from './TestComponent';
 import {
-  createServerStore,
+  createStore,
   encodeStore,
-  useNewStore,
 } from '../src/index';
 
 describe('useAsyncState', () => {
@@ -20,7 +19,7 @@ describe('useAsyncState', () => {
   });
 
   test('server side rendering works fine on success', () => {
-    const store = createServerStore();
+    const store = createStore();
     const html = ReactDOMServer.renderToString(
       <TestComponent method={asyncSuccessMethod} />,
     );
@@ -39,7 +38,7 @@ describe('useAsyncState', () => {
   });
 
   test('server side rendering works fine on error', () => {
-    const store = createServerStore();
+    const store = createStore();
     const html = ReactDOMServer.renderToString(
       <TestComponent method={asyncFailureMethod} />,
     );
@@ -58,7 +57,7 @@ describe('useAsyncState', () => {
   });
 
   test('component loads success state from store on initial render', () => {
-    const store = createServerStore();
+    const store = createStore();
     const html = ReactDOMServer.renderToString(
       <TestComponent method={asyncSuccessMethod} />,
     );
@@ -68,7 +67,7 @@ describe('useAsyncState', () => {
       </body>
     `;
 
-    useNewStore();
+    createStore(false);
     const setState = jest.fn();
     const useStateSpy = jest.spyOn(React, 'useState');
     const useStateMock: any = (init: any) => [init, setState];
@@ -92,7 +91,7 @@ describe('useAsyncState', () => {
   });
 
   test('component loads error state from store on initial render', () => {
-    const store = createServerStore();
+    const store = createStore();
     const html = ReactDOMServer.renderToString(
       <TestComponent method={asyncFailureMethod} />,
     );
@@ -102,7 +101,7 @@ describe('useAsyncState', () => {
       </body>
     `;
 
-    useNewStore();
+    createStore(false);
     const setState = jest.fn();
     const useStateSpy = jest.spyOn(React, 'useState');
     const useStateMock: any = (init: any) => [init, setState];
@@ -132,7 +131,7 @@ describe('useAsyncState', () => {
       </body>
     `;
 
-    useNewStore();
+    createStore(false);
     const { useState } = React;
     const setStateSpy = jest.fn();
     const useStateMock: any = (data: any) => {
@@ -198,7 +197,7 @@ describe('useAsyncState', () => {
       </body>
     `;
 
-    useNewStore();
+    createStore(false);
     const { useState } = React;
     const setStateSpy = jest.fn();
     const useStateMock: any = (data: any) => {
@@ -263,7 +262,7 @@ describe('useAsyncState', () => {
   });
 
   test('nested components load state from store on initial render', () => {
-    const store = createServerStore();
+    const store = createStore();
     const html = ReactDOMServer.renderToString(
       <ParentTestComponent />,
     );
@@ -273,7 +272,7 @@ describe('useAsyncState', () => {
       </body>
     `;
 
-    useNewStore();
+    createStore(false);
     const setState = jest.fn();
     const useStateSpy = jest.spyOn(React, 'useState');
     const useStateMock: any = (init: any) => [init, setState];
