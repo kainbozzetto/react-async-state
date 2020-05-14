@@ -60,7 +60,7 @@ function unboundUseAsyncState(
       } catch (error) {
         data = {
           result: defaultState,
-          error,
+          error: error.message,
           loading: false,
         };
       }
@@ -114,7 +114,7 @@ function unboundUseAsyncState(
         } catch (error) {
           data = {
             result: defaultState,
-            error,
+            error: error.message,
             loading: false,
           };
         }

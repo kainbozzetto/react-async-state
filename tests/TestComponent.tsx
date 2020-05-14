@@ -7,20 +7,12 @@ interface TestComponentProps {
   method: Function,
 }
 
-export async function asyncSuccessMethod() {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve('success!');
-    }, 50);
-  });
+export function asyncSuccessMethod() {
+  return new Promise((resolve) => setTimeout(() => resolve('success!'), 50));
 }
 
-export async function asyncFailureMethod() {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      reject('error!');
-    }, 50);
-  });
+export function asyncFailureMethod() {
+  return new Promise((resolve, reject) => setTimeout(() => reject(new Error('error!')), 50));
 }
 
 export const TestComponent:FunctionComponent<TestComponentProps> = ({ method }) => {
@@ -44,9 +36,7 @@ TestComponent.propTypes = {
 export const ParentTestComponent:FunctionComponent = () => {
   const [data] = useAsyncState(
     false,
-    () => new Promise((resolve) => {
-      setTimeout(() => resolve(true), 50);
-    }),
+    () => new Promise((resolve) => setTimeout(() => resolve(true), 50)),
   );
 
   return (
