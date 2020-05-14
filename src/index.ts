@@ -1,59 +1,63 @@
-import {useEffect, useState} from 'react';
-
-declare global {
-    interface Window {
-        state: {
-            [index: number]: any
-        }
-    }
-}
+import { useEffect, useState } from 'react';
 
 export interface asyncData {
-    result: any,
-    error: any,
-    loading: boolean,
+  result: any,
+  error: any,
+  loading: boolean,
 }
 
 export class Store {
   componentId: number = 0;
+
   isServer: boolean = false;
+
   components: {
     [index: number]: asyncData
   } = {};
 
-  constructor({isServer}: {isServer?: boolean} = {}) {
+  constructor({ isServer }: {isServer: boolean} = { isServer: false }) {
     this.isServer = isServer;
   }
 }
 
-export function _useAsyncState(
-  store: Store,
+export function encodeStore(decodedStore: Store) {
+  return Buffer.from(JSON.stringify(decodedStore.components)).toString('base64');
+}
+
+export function decodeStore(encodedStore: string) {
+  return JSON.parse(atob(encodedStore));
+}
+
+function unboundUseAsyncState(
+  boundStore: Store,
   defaultState: any,
   callback: Function,
   {
-      loop,
-      sleep,
+    loop,
+    sleep,
   } :
   {
-      loop: boolean,
-      sleep: number,
+    loop: boolean,
+    sleep: number,
   } = {
-      loop: false,
-      sleep: 10,
-  }
+    loop: false,
+    sleep: 10,
+  },
 ) : [asyncData, Function] {
-  const id = store.componentId++;
+  const store = boundStore;
+  const id = store.componentId;
+  store.componentId += 1;
   let data: asyncData;
-  if(store.isServer) {
+  if (store.isServer) {
     let done = false;
-    const syncCallback = async function() {
+    (async () => {
       try {
         data = {
           result: await callback(),
           error: null,
           loading: false,
         };
-      } catch(error) {
+      } catch (error) {
         data = {
           result: defaultState,
           error,
@@ -61,87 +65,72 @@ export function _useAsyncState(
         };
       }
       done = true;
-    }
-    syncCallback();
+    })();
+    // eslint-disable-next-line global-require
     const deasync = require('deasync');
-    if(loop) {
+    if (loop) {
       deasync.loopWhile(() => !done);
     } else {
-      while(!done) {
+      while (!done) {
         deasync.sleep(sleep);
       }
     }
     store.components[id] = data;
     return useState(data);
+  }
+  let state: [
+    asyncData,
+    Function,
+  ];
+  let loaded = false;
+  if (document.body.dataset.state) {
+    store.components = decodeStore(document.body.dataset.state);
+    document.body.removeAttribute('data-state');
+  }
+  if (store.components[id]) {
+    state = useState(store.components[id]);
+    loaded = true;
   } else {
-      let state: [
-          asyncData,
-          Function,
-      ];
-      let loaded = false;
-      if(document.body.dataset.state) {
-        store.components = decodeStore(document.body.dataset.state);
-        document.body.removeAttribute('data-state');
-      }
-      if(store.components[id]) {
-        state = useState(store.components[id]);
-        loaded = true;
-      } else {
-        state = useState({
+    state = useState({
+      result: defaultState,
+      error: null,
+      loading: false,
+    });
+  }
+  useEffect(() => {
+    if (!loaded) {
+      (async () => {
+        state[1]({
           result: defaultState,
           error: null,
-          loading: false,
+          loading: true,
         });
-      }
-      useEffect(() => {
-        async function newCallback() {
-          let data: asyncData;
-          state[1]({
-            result: defaultState,
+        try {
+          data = {
+            result: await callback(),
             error: null,
-            loading: true
-          });
-          try {
-            data = {
-              result: await callback(),
-              error: null,
-              loading: false,
-            };
-          } catch(error) {
-            data = {
-              result: defaultState,
-              error,
-              loading: false,
-            };
-          }
-          state[1](data);
+            loading: false,
+          };
+        } catch (error) {
+          data = {
+            result: defaultState,
+            error,
+            loading: false,
+          };
         }
-        if(!loaded) {
-          newCallback();
-        }
-      }, []); 
-      return state;
-  }
+        state[1](data);
+      })();
+    }
+  }, []);
+  return state;
 }
 
 export const store = new Store();
 
-export const useAsyncState = _useAsyncState.bind(null, store);
+export const useAsyncState = unboundUseAsyncState.bind(null, store);
 
-export function useNewStore() {
-  module.exports.useAsyncState = _useAsyncState.bind(null, new Store());
-}
-
-export function createServerStore() {
-  const store = new Store({isServer: true})
-  module.exports.useAsyncState = _useAsyncState.bind(null, store);
-  return store;
-}
-  
-export function encodeStore(decodedStore: Store) {
-  return Buffer.from(JSON.stringify(decodedStore.components)).toString('base64');
-}
-
-export function decodeStore(encodedStore: string) {
-  return JSON.parse(atob(encodedStore));
+export function createStore(isServer = true) {
+  const newStore = new Store({ isServer });
+  module.exports.useAsyncState = unboundUseAsyncState.bind(null, newStore);
+  return newStore;
 }
