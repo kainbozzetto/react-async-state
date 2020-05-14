@@ -50,7 +50,7 @@ function unboundUseAsyncState(
   let data: asyncData;
   if (store.isServer) {
     let done = false;
-    const syncCallback = async function syncCallback() {
+    (async () => {
       try {
         data = {
           result: await callback(),
@@ -65,8 +65,7 @@ function unboundUseAsyncState(
         };
       }
       done = true;
-    };
-    syncCallback();
+    })();
     // eslint-disable-next-line global-require
     const deasync = require('deasync');
     if (loop) {
@@ -99,29 +98,28 @@ function unboundUseAsyncState(
     });
   }
   useEffect(() => {
-    async function newCallback() {
-      state[1]({
-        result: defaultState,
-        error: null,
-        loading: true,
-      });
-      try {
-        data = {
-          result: await callback(),
-          error: null,
-          loading: false,
-        };
-      } catch (error) {
-        data = {
-          result: defaultState,
-          error,
-          loading: false,
-        };
-      }
-      state[1](data);
-    }
     if (!loaded) {
-      newCallback();
+      (async () => {
+        state[1]({
+          result: defaultState,
+          error: null,
+          loading: true,
+        });
+        try {
+          data = {
+            result: await callback(),
+            error: null,
+            loading: false,
+          };
+        } catch (error) {
+          data = {
+            result: defaultState,
+            error,
+            loading: false,
+          };
+        }
+        state[1](data);
+      })();
     }
   }, []);
   return state;
