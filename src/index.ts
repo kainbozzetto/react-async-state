@@ -15,7 +15,7 @@ export class Store {
     [index: number]: asyncData
   } = {};
 
-  constructor({ isServer }: {isServer?: boolean} = {}) {
+  constructor({ isServer }: {isServer: boolean} = { isServer: false }) {
     this.isServer = isServer;
   }
 }
@@ -29,7 +29,7 @@ export function decodeStore(encodedStore: string) {
 }
 
 function unboundUseAsyncState(
-  store: Store,
+  boundStore: Store,
   defaultState: any,
   callback: Function,
   {
@@ -44,7 +44,9 @@ function unboundUseAsyncState(
     sleep: 10,
   },
 ) : [asyncData, Function] {
-  const id = store.componentId++;
+  const store = boundStore;
+  const id = store.componentId;
+  store.componentId += 1;
   let data: asyncData;
   if (store.isServer) {
     let done = false;
