@@ -4,7 +4,7 @@ import React, { FunctionComponent } from 'react';
 import { useAsyncState } from '../index';
 
 interface TestComponentProps {
-  method: Function
+  method: Function,
 }
 
 export function asyncSuccessMethod() {
