@@ -8,7 +8,7 @@
     "build": "tsc",
     "test": "jest"
   },
-  "author": "",
+  "author": "Kain Bozzetto",
   "license": "ISC",
   "dependencies": {
     "deasync": "^0.1.20",
