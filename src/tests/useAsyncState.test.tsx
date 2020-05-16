@@ -11,7 +11,7 @@ import {
 import {
   createStore,
   encodeStore,
-} from '../src/index';
+} from '../index';
 
 describe('useAsyncState', () => {
   afterEach(() => {

@@ -1,9 +1,0 @@
-{
-    "compilerOptions": {
-        "jsx": "react",
-        "module": "commonjs",
-        "esModuleInterop": true,
-        "target": "es5",
-        "noImplicitAny": true,
-    },
-}

@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { FunctionComponent } from 'react';
 
-import { useAsyncState } from '../src/index';
+import { useAsyncState } from '../index';
 
 interface TestComponentProps {
   method: Function,
