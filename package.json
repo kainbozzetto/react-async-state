@@ -8,7 +8,7 @@
     "build": "tsc",
     "test": "jest"
   },
-  "author": "",
+  "author": "Kain Bozzetto",
   "license": "ISC",
   "dependencies": {
     "deasync": "^0.1.20",
@@ -35,5 +35,6 @@
     "react-router-dom": "^5.1.2",
     "ts-jest": "^24.3.0",
     "typescript": "^3.7.5"
-  }
+  },
+  "repository": "git@github.com:kainbozzetto/react-async-state.git"
 }

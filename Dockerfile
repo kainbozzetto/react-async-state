@@ -4,4 +4,4 @@ COPY ./ /srv/web
 
 WORKDIR /srv/web
 
-RUN npm install
+RUN yarn install
