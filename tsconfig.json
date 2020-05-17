@@ -6,14 +6,13 @@
         "target": "es5",
         "declaration": true,
         "noImplicitAny": true,
-        "outDir": "dist",
+        "outDir": "dist"
     },
     "include": [
         "src/*.ts"
     ],
     "exclude": [
         "node_modules",
-        "dist",
-        "src/tests/*"
+        "dist"
     ]
 }
