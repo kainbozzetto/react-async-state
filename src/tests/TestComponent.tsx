@@ -4,18 +4,18 @@ import React, { FunctionComponent } from 'react';
 import { useAsyncState } from '../index';
 
 interface TestComponentProps {
-  method: Function,
+  method: Function;
 }
 
-export function asyncSuccessMethod() {
+export function asyncSuccessMethod(): Promise<string> {
   return new Promise((resolve) => setTimeout(() => resolve('success!'), 50));
 }
 
-export function asyncFailureMethod() {
+export function asyncFailureMethod(): Promise<string> {
   return new Promise((resolve, reject) => setTimeout(() => reject(new Error('error!')), 50));
 }
 
-export const TestComponent:FunctionComponent<TestComponentProps> = ({ method }) => {
+export const TestComponent: FunctionComponent<TestComponentProps> = ({ method }) => {
   const [data] = useAsyncState(
     null,
     method,
@@ -33,7 +33,7 @@ TestComponent.propTypes = {
   method: PropTypes.func.isRequired,
 };
 
-export const ParentTestComponent:FunctionComponent = () => {
+export const ParentTestComponent: FunctionComponent = () => {
   const [data] = useAsyncState(
     false,
     () => new Promise((resolve) => setTimeout(() => resolve(true), 50)),

@@ -1,56 +1,58 @@
 import { useEffect, useState } from 'react';
 
-export interface asyncData {
-  result: any,
-  error: any,
-  loading: boolean,
+export interface AsyncData {
+  result: unknown;
+  error: unknown;
+  loading: boolean;
+}
+
+export interface ComponentsObj {
+  [index: number]: AsyncData;
 }
 
 export class Store {
-  componentId: number = 0;
+  componentId = 0;
 
-  isServer: boolean = false;
+  isServer = false;
 
-  components: {
-    [index: number]: asyncData
-  } = {};
+  components: ComponentsObj = {};
 
   constructor({ isServer }: {isServer: boolean} = { isServer: false }) {
     this.isServer = isServer;
   }
 }
 
-export function encodeStore(decodedStore: Store) {
+export function encodeStore(decodedStore: Store): string {
   return Buffer.from(JSON.stringify(decodedStore.components)).toString('base64');
 }
 
-export function decodeStore(encodedStore: string) {
+export function decodeStore(encodedStore: string): ComponentsObj {
   return JSON.parse(atob(encodedStore));
 }
 
 function unboundUseAsyncState(
   boundStore: Store,
-  defaultState: any,
+  defaultState: unknown,
   callback: Function,
   {
     loop,
     sleep,
-  } :
+  }:
   {
-    loop: boolean,
-    sleep: number,
+    loop: boolean;
+    sleep: number;
   } = {
     loop: false,
     sleep: 10,
   },
-) : [asyncData, Function] {
+): [AsyncData, Function] {
   const store = boundStore;
   const id = store.componentId;
   store.componentId += 1;
-  let data: asyncData;
+  let data: AsyncData;
   if (store.isServer) {
     let done = false;
-    (async () => {
+    (async (): Promise<void> => {
       try {
         data = {
           result: await callback(),
@@ -66,7 +68,7 @@ function unboundUseAsyncState(
       }
       done = true;
     })();
-    // eslint-disable-next-line global-require
+    // eslint-disable-next-line global-require, @typescript-eslint/no-var-requires
     const deasync = require('deasync');
     if (loop) {
       deasync.loopWhile(() => !done);
@@ -79,7 +81,7 @@ function unboundUseAsyncState(
     return useState(data);
   }
   let state: [
-    asyncData,
+    AsyncData,
     Function,
   ];
   let loaded = false;
@@ -99,7 +101,7 @@ function unboundUseAsyncState(
   }
   useEffect(() => {
     if (!loaded) {
-      (async () => {
+      (async (): Promise<void> => {
         state[1]({
           result: defaultState,
           error: null,
@@ -129,7 +131,7 @@ export const store = new Store();
 
 export const useAsyncState = unboundUseAsyncState.bind(null, store);
 
-export function createStore(isServer = true) {
+export function createStore(isServer = true): Store {
   const newStore = new Store({ isServer });
   module.exports.useAsyncState = unboundUseAsyncState.bind(null, newStore);
   return newStore;

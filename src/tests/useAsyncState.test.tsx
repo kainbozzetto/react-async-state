@@ -1,5 +1,5 @@
 import { act, render } from '@testing-library/react';
-import React from 'react';
+import React, { Dispatch, useState } from 'react';
 import ReactDOMServer from 'react-dom/server';
 
 import {
@@ -70,8 +70,8 @@ describe('useAsyncState', () => {
     createStore(false);
     const setState = jest.fn();
     const useStateSpy = jest.spyOn(React, 'useState');
-    const useStateMock: any = (init: any) => [init, setState];
-    useStateSpy.mockImplementation(useStateMock);
+    const useStateMock = (init: unknown): [unknown, Dispatch<unknown>] => [init, setState];
+    useStateSpy.mockImplementation(useStateMock as jest.MockedFunction<typeof useState>);
 
     render(
       <TestComponent method={asyncSuccessMethod} />,
@@ -104,8 +104,8 @@ describe('useAsyncState', () => {
     createStore(false);
     const setState = jest.fn();
     const useStateSpy = jest.spyOn(React, 'useState');
-    const useStateMock: any = (init: any) => [init, setState];
-    useStateSpy.mockImplementation(useStateMock);
+    const useStateMock = (init: unknown): [unknown, Dispatch<unknown>] => [init, setState];
+    useStateSpy.mockImplementation(useStateMock as jest.MockedFunction<typeof useState>);
 
     render(
       <TestComponent method={asyncFailureMethod} />,
@@ -132,18 +132,18 @@ describe('useAsyncState', () => {
     `;
 
     createStore(false);
-    const { useState } = React;
+    const { useState: useStateImplemention } = React;
     const setStateSpy = jest.fn();
-    const useStateMock: any = (data: any) => {
-      const [state, setState] = useState(data);
+    const useStateMock = (data: unknown): [unknown, Dispatch<unknown>] => {
+      const [state, setState] = useStateImplemention(data);
       setStateSpy.mockImplementation(setState);
       return [state, setStateSpy];
     };
     const useStateSpy = jest.spyOn(React, 'useState').mockImplementation(
-      useStateMock,
+      useStateMock as jest.MockedFunction<typeof useState>,
     );
 
-    let promise : Promise<any>;
+    let promise: Promise<string>;
     const asyncSuccessMethodWrapper = jest.fn(
       () => {
         promise = asyncSuccessMethod();
@@ -198,18 +198,18 @@ describe('useAsyncState', () => {
     `;
 
     createStore(false);
-    const { useState } = React;
+    const { useState: useStateImplemention } = React;
     const setStateSpy = jest.fn();
-    const useStateMock: any = (data: any) => {
-      const [state, setState] = useState(data);
+    const useStateMock = (data: unknown): [unknown, Dispatch<unknown>] => {
+      const [state, setState] = useStateImplemention(data);
       setStateSpy.mockImplementation(setState);
       return [state, setStateSpy];
     };
     const useStateSpy = jest.spyOn(React, 'useState').mockImplementation(
-      useStateMock,
+      useStateMock as jest.MockedFunction<typeof useState>,
     );
 
-    let promise : Promise<any>;
+    let promise: Promise<string>;
     const asyncFailureMethodWrapper = jest.fn(
       () => {
         promise = asyncFailureMethod();
@@ -275,8 +275,8 @@ describe('useAsyncState', () => {
     createStore(false);
     const setState = jest.fn();
     const useStateSpy = jest.spyOn(React, 'useState');
-    const useStateMock: any = (init: any) => [init, setState];
-    useStateSpy.mockImplementation(useStateMock);
+    const useStateMock = (init: unknown): [unknown, Dispatch<unknown>] => [init, setState];
+    useStateSpy.mockImplementation(useStateMock as jest.MockedFunction<typeof useState>);
 
     render(
       <ParentTestComponent />,
