@@ -4,7 +4,9 @@ React Async State provides a hook that allows you to set state using asynchronou
 
 ### Installation
 
-TODO
+```
+npm i --save react-async-state-hook
+```
 
 ### Usage
 
