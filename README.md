@@ -1,4 +1,4 @@
-# React Async State
+# React Async State [![Build Status](https://travis-ci.org/kainbozzetto/react-async-state.svg?branch=master)](https://travis-ci.org/kainbozzetto/react-async-state)
 
 React Async State provides a hook that allows you to set state using asynchronous functions both in server-side rendering and in the browser.
 
